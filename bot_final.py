@@ -9,10 +9,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ============= CONFIGURATION =============
-TELEGRAM_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL"
-SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY"
-GROQ_API_KEY = "YOUR_GROQ_API_KEY"
+import os
+
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 groq_client = Groq(api_key=GROQ_API_KEY)
 
