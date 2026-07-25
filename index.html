@@ -66,7 +66,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Fixed Height for all pages to work perfectly on PC & Mobile */
     #app {
       display: flex;
       flex-direction: column;
@@ -335,6 +334,11 @@
       align-items: center;
       gap: 4px;
       color: var(--text);
+      transition: all 0.1s;
+    }
+
+    .cat-btn:active {
+      transform: scale(0.95);
     }
 
     .cat-btn.selected {
@@ -442,28 +446,27 @@
 
     .toast {
       position: fixed;
-      bottom: 70px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: #EF4444;
-      padding: 10px 16px;
+      background: #10B981;
+      padding: 12px 20px;
       border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 800;
       color: white;
       opacity: 0;
       transition: 0.3s ease;
-      z-index: 300;
+      z-index: 9999;
       pointer-events: none;
-      white-space: nowrap;
+      text-align: center;
+      max-width: 90%;
+      word-wrap: break-word;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .toast.show {
       opacity: 1;
-    }
-
-    .toast.success {
-      background: #10B981;
     }
   </style>
 </head>
@@ -533,13 +536,11 @@
           </div>
           <div class="form-group">
             <label class="form-label">Account (Required)</label>
-            <select class="input-field" id="accountSelect">
-              <option value="">-- Select Account --</option>
-            </select>
+            <select class="input-field" id="accountSelect"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Description</label>
-            <input type="text" class="input-field" id="descInput" placeholder="Details...">
+            <input type="text" class="input-field" id="descInput" placeholder="Details (e.g. Snacks)">
           </div>
           <div class="form-group">
             <label class="form-label">Date</label>
@@ -668,10 +669,10 @@
     // ===== CONFIG & STATE =====
     const SUPABASE_URL = "https://jllnfocnsvgnqdmzrnue.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsbG5mb2Nuc3ZnbnFkbXpybnVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDIxOTUsImV4cCI6MjEwMDUxODE5NX0.ofUuGFvzfMKWLRN72DV_Y5Q7vbbxts44wvU_zCkmBiY";
-    const PYTHONANYWHERE_URL = 'https://swapnilpy369.pythonanywhere.com'; // Added Python Backend URL
+    const PYTHONANYWHERE_URL = 'https://swapnilpy369.pythonanywhere.com';
 
     let state = {
-      expenses: [], categories: [], accounts: [], selectedCat: null, filterType: 'month',
+      expenses: [], categories: [], accounts: [], selectedCat: null, selectedAcc: null, filterType: 'month',
       lendenPersons: JSON.parse(localStorage.getItem('lendenPersons')) || [],
       lendenTxns: JSON.parse(localStorage.getItem('lendenTxns')) || [],
       budget: parseFloat(localStorage.getItem('monthlyBudget')) || 0,
@@ -688,23 +689,13 @@
       async del(t, id) { return (await fetch(`${SUPABASE_URL}/rest/v1/${t}?id=eq.${id}`, { method: 'DELETE', headers: this.h })).status; }
     };
 
-    // Haptic feedback function
-    function vibrate() { if (navigator.vibrate) { navigator.vibrate(40); } }
+    function vibrate() { try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { } }
 
-    // Backend Notification Function
     async function notifyBackend(endpoint, payload) {
       if (!PYTHONANYWHERE_URL) return;
       try {
-        const response = await fetch(`${PYTHONANYWHERE_URL}/${endpoint}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await response.json();
-        console.log("Bot Response:", data);
-      } catch (e) {
-        console.error("Backend Error:", e);
-      }
+        await fetch(`${PYTHONANYWHERE_URL}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      } catch (e) { console.log("Backend not active"); }
     }
 
     async function loadAll() {
@@ -712,14 +703,18 @@
       document.getElementById('groqKeyInput').value = state.groqKey;
       try {
         const [cats, accs, exps] = await Promise.all([
-          SB.get('categories', 'select=*&order=name'), SB.get('accounts', 'select=*&order=created_at'),
-          SB.get('expenses', 'select=*,categories(name),accounts(name)&order=date.desc&limit=200')
+          SB.get('categories', 'select=*&order=name'),
+          SB.get('accounts', 'select=*&order=created_at'),
+          SB.get('expenses', 'select=*,categories(name),accounts(name)&order=date.desc&limit=500')
         ]);
         state.categories = Array.isArray(cats) ? cats : [];
         state.accounts = Array.isArray(accs) ? accs : [];
         state.expenses = Array.isArray(exps) ? exps : [];
+
+        // Ensure default selection mapping is identical to original working logic
+        if (state.accounts.length > 0) state.selectedAcc = state.accounts[0].id;
       } catch (e) {
-        toast('Starting Offline/Cache Mode');
+        toast('Starting Offline Mode', false);
       } finally {
         renderAll();
       }
@@ -733,8 +728,8 @@
       document.getElementById('budgetInput').value = state.budget || '';
     }
     function changeTheme(t) { localStorage.setItem('theme', t); document.documentElement.setAttribute('data-theme', t === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : t); }
-    function saveBudget(v) { state.budget = parseFloat(v) || 0; localStorage.setItem('monthlyBudget', state.budget); toast('Budget Saved ✓', true); renderHome(); }
-    function saveGroqKey(v) { state.groqKey = v.trim(); localStorage.setItem('groqKey', state.groqKey); toast('API Key Saved ✓', true); }
+    function saveBudget(v) { state.budget = parseFloat(v) || 0; localStorage.setItem('monthlyBudget', state.budget); toast('Budget Saved ✓'); renderHome(); }
+    function saveGroqKey(v) { state.groqKey = v.trim(); localStorage.setItem('groqKey', state.groqKey); toast('API Key Saved ✓'); }
 
     function renderHome() {
       const now = new Date(); const todayStr = now.toISOString().split('T')[0];
@@ -780,63 +775,71 @@
 
     function addQuickAmount(val) { vibrate(); const input = document.getElementById('amountInput'); input.value = (parseFloat(input.value) || 0) + val; }
 
+    /* EXACT logic copied from your working source code for reliability[cite: 2] */
     async function addExpense() {
-      vibrate();
       const amt = parseFloat(document.getElementById('amountInput').value);
+      const desc = document.getElementById('descInput').value;
+      const date = document.getElementById('dateInput').value || new Date().toISOString().split('T')[0];
       const accId = parseInt(document.getElementById('accountSelect').value);
 
-      if (!amt || amt <= 0) { toast('Error: Valid Amount Required!'); return; }
-      if (!state.selectedCat) { toast('Error: Category is Required!'); return; }
-      if (!accId || isNaN(accId)) { toast('Error: Account is Required!'); return; }
+      if (!amt || amt <= 0) { toast('Enter amount', false); return; }
+      if (!state.selectedCat) { toast('Select category', false); return; }
 
       try {
-        const payload = {
-          amount: amt,
-          category_id: state.selectedCat,
-          description: document.getElementById('descInput').value,
-          date: document.getElementById('dateInput').value || new Date().toISOString().split('T')[0],
-          account_id: accId,
-          source: 'mobile'
-        };
+        const result = await SB.post('expenses', { amount: amt, category_id: state.selectedCat, description: desc, date, account_id: accId, source: 'mobile' });
 
-        const res = await SB.post('expenses', payload);
-
-        if (res && Array.isArray(res) && res.length > 0) {
+        if (Array.isArray(result) && result.length > 0) {
           const cat = state.categories.find(c => c.id === state.selectedCat);
           const acc = state.accounts.find(a => a.id === accId);
-          res[0].categories = { name: cat ? cat.name : 'Other' };
-          res[0].accounts = { name: acc ? acc.name : 'Unknown' };
-          state.expenses.unshift(res[0]);
+          result[0].categories = { name: cat?.name || 'Other' };
+          result[0].accounts = { name: acc?.name || 'Unknown' };
+          state.expenses.unshift(result[0]);
 
-          /* UNCOMMENT BELOW WHEN BOT IS READY TO RECEIVE ALERTS */
-          // notifyBackend('new_expense', {
-          //   amount: amt,
-          //   category: res[0].categories.name,
-          //   account: res[0].accounts.name,
-          //   description: payload.description,
-          //   date: payload.date
-          // });
+          /* OPTIONAL: Backend push */
+          // notifyBackend('new_expense', { amount: amt, category: result[0].categories.name, account: result[0].accounts.name, description: desc, date: date });
 
           document.getElementById('amountInput').value = '';
           document.getElementById('descInput').value = '';
           state.selectedCat = null;
-
           renderAll();
-          toast('Saved Successfully ✓', true);
+
+          toast('Expense added! ✓');
           switchPage('home', document.querySelector('.nav-item'));
-        } else {
-          toast(`DB Error: ${res.message || 'Check connection'}`);
         }
-      } catch (err) {
-        toast('Network Error! Try again.');
-      }
+      } catch (e) { toast('Error saving data', false); }
     }
 
-    async function delExp(id) { vibrate(); if (confirm('Delete?')) { await SB.del('expenses', id); state.expenses = state.expenses.filter(e => e.id !== id); renderAll(); toast('Deleted', true); } }
-    function selectCat(id) { vibrate(); state.selectedCat = state.selectedCat === id ? null : id; renderCatGrid(); }
+    async function delExp(id) { vibrate(); if (confirm('Delete this expense?')) { await SB.del('expenses', id); state.expenses = state.expenses.filter(e => e.id !== id); renderAll(); toast('Deleted'); } }
+
+    function selectCat(id) {
+      vibrate();
+      state.selectedCat = state.selectedCat === id ? null : id;
+      renderCatGrid();
+    }
+
     function filterExp(t, btn) { vibrate(); state.filterType = t; document.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); renderExpList(); }
 
-    // ===== LEN DEN (LEDGER) LOGIC =====
+    /* EXACT logic copied from your working source code for reliability[cite: 2] */
+    function renderCatGrid() {
+      const grid = document.getElementById('catGrid');
+      grid.innerHTML = state.categories.map(c => `
+        <button class="cat-btn ${state.selectedCat === c.id ? 'selected' : ''}" onclick="selectCat(${c.id})">
+          <span style="font-size:20px">${CAT_ICONS[c.name] || '📦'}</span>
+          <span style="font-size:9px;font-weight:700">${c.name}</span>
+        </button>`).join('');
+    }
+
+    /* EXACT logic copied from your working source code for reliability[cite: 2] */
+    function renderAccountSelect() {
+      const sel = document.getElementById('accountSelect');
+      sel.innerHTML = state.accounts.map(a => `<option value="${a.id}">${a.name} (${a.type})</option>`).join('');
+      if (state.selectedAcc) sel.value = state.selectedAcc;
+    }
+
+    // Listen for manual account changes
+    document.getElementById('accountSelect').addEventListener('change', function (e) { state.selectedAcc = e.target.value; });
+
+    /* ===== LEN DEN (LEDGER) LOGIC ===== */
     function renderLenDen() {
       let tLena = 0, tDena = 0;
       const html = state.lendenPersons.map(p => {
@@ -846,10 +849,8 @@
           if (t.type === 'dena' || t.type === 'jama_liya') bal -= parseFloat(t.amount);
           if (t.type === 'jama') bal += (bal > 0 ? -parseFloat(t.amount) : parseFloat(t.amount));
         });
-
         if (bal > 0) tLena += bal;
         if (bal < 0) tDena += Math.abs(bal);
-
         return `<div class="txn-item" onclick="vibrate(); openLedger(${p.id},'${p.name}',${bal})"><div class="txn-icon" style="border-radius:50%">👤</div><div style="flex:1"><div class="txn-name">${p.name}</div></div><div style="font-weight:800;color:${bal > 0 ? 'var(--success)' : (bal < 0 ? 'var(--danger)' : 'var(--text-3)')}">₹${fmtNum(Math.abs(bal))}</div></div>`;
       }).join('');
 
@@ -893,24 +894,10 @@
       if (!amt || isNaN(amt)) return;
       state.lendenTxns.push({ id: Date.now(), person_id: id, type, amount: amt, remark: prompt('Remark (Optional):') || '-', date: new Date().toISOString().split('T')[0] });
       localStorage.setItem('lendenTxns', JSON.stringify(state.lendenTxns));
-      renderLenDen(); closeModal(); toast('Record Added ✓', true);
+      renderLenDen(); closeModal(); toast('Record Added ✓');
     }
 
     function openNewPersonModal() { const name = prompt("Enter Person's Name:"); if (name) { state.lendenPersons.push({ id: Date.now(), name }); localStorage.setItem('lendenPersons', JSON.stringify(state.lendenPersons)); renderLenDen(); } }
-
-    function renderCatGrid() {
-      const grid = document.getElementById('catGrid');
-      if (state.categories.length === 0) {
-        grid.innerHTML = '<div style="grid-column: span 4; text-align:center; color:var(--danger); font-size:11px; padding: 10px;">No categories found! Add in Settings.</div>';
-        return;
-      }
-      grid.innerHTML = state.categories.map(c => `<div class="cat-btn ${state.selectedCat === c.id ? 'selected' : ''}" onclick="selectCat(${c.id})"><span style="font-size:20px">${CAT_ICONS[c.name] || '📦'}</span><span style="font-size:9px;font-weight:700">${c.name}</span></div>`).join('');
-    }
-
-    function renderAccountSelect() {
-      const html = `<option value="">-- Select Account --</option>` + (state.accounts.length ? state.accounts.map(a => `<option value="${a.id}">${a.name} (${a.type})</option>`).join('') : '<option value="" disabled>No Accounts Found! Add in Settings.</option>');
-      document.getElementById('accountSelect').innerHTML = html;
-    }
 
     function renderSettings() {
       document.getElementById('accList').innerHTML = state.accounts.map(a => `<div class="setting-row"><div><div style="font-size:12px;font-weight:700">🏦 ${a.name}</div><div style="font-size:10px;color:var(--text-3)">${a.type}</div></div><button class="icon-btn" style="border:none" onclick="delAcc(${a.id})">🗑️</button></div>`).join('');
@@ -922,22 +909,17 @@
     async function saveAcc() {
       vibrate();
       const n = document.getElementById('accName').value;
-      if (!n) return;
+      if (!n) { toast("Name cannot be empty!", false); return; }
       try {
         const payload = {
-          name: n,
-          type: document.getElementById('accType').value,
-          opening_balance: 0,
-          current_month: new Date().getMonth() + 1,
-          current_year: new Date().getFullYear()
+          name: n, type: document.getElementById('accType').value, opening_balance: 0,
+          current_month: new Date().getMonth() + 1, current_year: new Date().getFullYear()
         };
         const r = await SB.post('accounts', payload);
         if (r && Array.isArray(r) && r.length > 0) {
-          state.accounts.push(r[0]); renderAll(); closeModal(); toast('Added', true);
-        } else {
-          toast(`Error: ${r.message || 'Failed to save'}`);
-        }
-      } catch (e) { toast('Network Error'); }
+          state.accounts.push(r[0]); renderAll(); closeModal(); toast('Added');
+        } else toast(`Error: Failed to save`, false);
+      } catch (e) { toast('Network Error', false); }
     }
 
     async function delAcc(id) { vibrate(); if (confirm('Delete?')) { await SB.del('accounts', id); state.accounts = state.accounts.filter(a => a.id !== id); renderAll(); } }
@@ -947,15 +929,13 @@
     async function saveCat() {
       vibrate();
       const n = document.getElementById('catName').value;
-      if (!n) return;
+      if (!n) { toast("Name cannot be empty!", false); return; }
       try {
         const r = await SB.post('categories', { name: n });
         if (r && Array.isArray(r) && r.length > 0) {
-          state.categories.push(r[0]); renderAll(); closeModal(); toast('Added', true);
-        } else {
-          toast(`Error: ${r.message || 'Failed to save'}`);
-        }
-      } catch (e) { toast('Network Error'); }
+          state.categories.push(r[0]); renderAll(); closeModal(); toast('Added');
+        } else toast(`Error: Failed to save`, false);
+      } catch (e) { toast('Network Error', false); }
     }
 
     async function delCat(id) { vibrate(); if (confirm('Delete?')) { await SB.del('categories', id); state.categories = state.categories.filter(c => c.id !== id); renderAll(); } }
@@ -972,7 +952,7 @@
       const input = document.getElementById('aiInput');
       const text = input.value.trim();
       if (!text) return;
-      if (!state.groqKey) { toast('Please save Groq API Key in Settings first!'); return; }
+      if (!state.groqKey) { toast('Save Groq API Key in Settings!', false); return; }
 
       addChatMsg(text, 'user');
       input.value = '';
@@ -1016,7 +996,15 @@
     function switchPage(p, btn) { vibrate(); document.querySelectorAll('.page').forEach(el => el.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`page-${p}`).classList.add('active'); btn.classList.add('active'); }
     function openModal(t, b) { document.getElementById('modalTitle').textContent = t; document.getElementById('modalBody').innerHTML = b; document.getElementById('modalOverlay').classList.add('open'); }
     function closeModal(e) { if (e && e.target !== document.getElementById('modalOverlay')) return; document.getElementById('modalOverlay').classList.remove('open'); }
-    function toast(m, success = false) { const t = document.getElementById('toast'); t.textContent = m; t.className = `toast show ${success ? 'success' : ''}`; setTimeout(() => t.classList.remove('show'), 3500); }
+
+    function toast(m, success = true) {
+      const t = document.getElementById('toast');
+      t.textContent = m;
+      t.style.background = success ? '#10B981' : '#EF4444';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
     function fmtNum(n) { return Math.round(parseFloat(n) || 0).toLocaleString('en-IN'); }
     function fmtDate(d) { return d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''; }
 
