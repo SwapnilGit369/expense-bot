@@ -168,7 +168,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* FLOATING AI */
-.ai-fab{position:fixed;bottom:calc(var(--nav)+16px);right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--sec));color:white;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(99,102,241,.5);display:flex;align-items:center;justify-content:center;z-index:150;animation:pulse 2s infinite}
+.ai-fab{position:fixed;bottom:calc(var(--nav)+16px);left:16px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--sec));color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 20px rgba(99,102,241,.5);display:flex;align-items:center;justify-content:center;z-index:160;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 4px 20px rgba(99,102,241,.5)}50%{box-shadow:0 4px 30px rgba(99,102,241,.8),0 0 0 8px rgba(99,102,241,.1)}}
 
 /* AI DRAWER */
@@ -466,7 +466,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 </div>
 
 <!-- FAB for Len Den -->
-<button style="position:fixed;bottom:calc(var(--nav)+16px);right:76px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--ok),#059669);color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 20px rgba(16,185,129,.4);display:none;align-items:center;justify-content:center;z-index:140" id="ld-fab" onclick="addPerson()">+</button>
+<button style="position:fixed;bottom:calc(var(--nav)+16px);right:16px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--ok),#059669);color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 20px rgba(16,185,129,.4);display:none;align-items:center;justify-content:center;z-index:140" id="ld-fab" onclick="addPerson()">+</button>
 
 <div class="toast" id="toast"></div>
 
