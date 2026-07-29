@@ -148,10 +148,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .lv{font-size:11px;font-weight:700}
 
 /* BAR CHART */
-.bar-wrap{display:flex;gap:5px;align-items:flex-end;height:90px;margin-bottom:22px}
+.bar-wrap{display:flex;gap:5px;align-items:flex-end;height:120px;margin-bottom:28px}
 .bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .bf{width:100%;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--p),var(--pd));min-height:3px;position:relative;transition:height .4s}
-.bt{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;color:var(--t2);white-space:nowrap}
+.bt{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;color:var(--t2);white-space:nowrap;background:var(--card);padding:1px 3px;border-radius:3px}
 .bd{font-size:8px;color:var(--t3)}
 
 /* MODAL */
@@ -306,20 +306,34 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 
     <!-- ADD -->
     <div class="page" id="pg-add">
-      <div class="card cp">
-        <div class="type-tabs">
-          <button class="tt exp active" id="tt-exp" onclick="setType('expense')">💸 Expense</button>
-          <button class="tt inc" id="tt-inc" onclick="setType('income')">💰 Income</button>
-          <button class="tt trf" id="tt-trf" onclick="setType('transfer')">🔄 Transfer</button>
-        </div>
-        <div class="fg"><label class="fl">Amount (₹)</label><input class="fi" id="fi-amt" type="number" inputmode="decimal" placeholder="0" autocomplete="off"></div>
-        <div class="fg" id="fg-cat"><label class="fl">Category</label><div class="cg" id="cat-grid"></div></div>
-        <div class="fg" id="fg-acc"><label class="fl" id="acc-lbl">Account</label><select class="fi" id="fi-acc"></select></div>
-        <div class="fg" id="fg-to" style="display:none"><label class="fl">To Account</label><select class="fi" id="fi-to"></select></div>
-        <div class="fg"><label class="fl">Narration / Description</label><input class="fi" id="fi-desc" type="text" placeholder="Kisliye?"></div>
-        <div class="fg"><label class="fl">Date</label><input class="fi" id="fi-date" type="date"></div>
-        <button class="btn bp" onclick="addTxn()">Add</button>
+      <div class="type-tabs" style="margin-bottom:12px">
+        <button class="tt exp active" id="tt-exp" onclick="setType('expense')">💸 Expense</button>
+        <button class="tt inc" id="tt-inc" onclick="setType('income')">💰 Income</button>
+        <button class="tt trf" id="tt-trf" onclick="setType('transfer')">🔄 Transfer</button>
       </div>
+      <div class="card" style="padding:14px 16px 10px;margin-bottom:10px">
+        <label class="fl">Amount (₹)</label>
+        <input class="fi" id="fi-amt" type="number" inputmode="decimal" placeholder="0.00" autocomplete="off" style="font-size:28px;font-weight:900;text-align:center;letter-spacing:-1px;padding:10px;border-radius:10px">
+      </div>
+      <div class="card" id="fg-cat" style="padding:12px 14px;margin-bottom:10px">
+        <label class="fl" style="margin-bottom:8px">Category</label>
+        <div class="cg" id="cat-grid"></div>
+      </div>
+      <div class="card" style="padding:12px 14px;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="fg-acc">
+          <div><label class="fl" id="acc-lbl">Account</label><select class="fi" id="fi-acc" style="font-size:13px;padding:9px 10px"></select></div>
+          <div><label class="fl">Date</label><input class="fi" id="fi-date" type="date" style="font-size:13px;padding:9px 10px"></div>
+        </div>
+        <div id="fg-to" style="display:none;margin-top:10px">
+          <label class="fl">To Account</label>
+          <select class="fi" id="fi-to" style="font-size:13px;padding:9px 10px"></select>
+        </div>
+        <div style="margin-top:10px">
+          <label class="fl">Narration</label>
+          <input class="fi" id="fi-desc" type="text" placeholder="Kisliye?" style="font-size:13px;padding:9px 10px">
+        </div>
+      </div>
+      <button class="btn bp" onclick="addTxn()" style="padding:14px;font-size:15px">Add Transaction</button>
     </div>
 
     <!-- LIST -->
