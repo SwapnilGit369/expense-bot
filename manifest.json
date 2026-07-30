@@ -1,27 +1,25 @@
 {
-  "name": "SwapExp — Expense Tracker",
+  "name": "SwapExp",
   "short_name": "SwapExp",
   "description": "Personal expense and len den tracker",
-  "start_url": "/expense-bot/",
-  "scope": "/expense-bot/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#6366F1",
   "theme_color": "#6366F1",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "categories": ["finance", "productivity"],
-  "lang": "en-IN"
+  ]
 }
