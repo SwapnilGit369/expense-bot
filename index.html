@@ -164,6 +164,55 @@ button,input,select{font-family:inherit}
 .chip.on{background:var(--p);border-color:var(--p);color:#fff}
 
 /* ── ADD PAGE ── */
+.add-wrap{display:flex;flex-direction:column;gap:10px}
+
+.amt-row{
+  display:flex;align-items:center;justify-content:center;
+  background:var(--s1);border:1px solid var(--br);border-radius:var(--R);
+  padding:14px 16px;gap:6px;box-shadow:var(--sh);
+}
+.amt-rs{font-size:22px;font-weight:700;color:var(--t3);flex-shrink:0}
+.amt-inp{
+  border:none;background:none;outline:none;
+  font-size:36px;font-weight:900;color:var(--tx);
+  width:100%;text-align:center;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;font-family:inherit;
+}
+.amt-inp::placeholder{color:var(--s3)}
+
+.acc-date-row{
+  display:flex;align-items:flex-end;gap:8px;
+  background:var(--s1);border:1px solid var(--br);border-radius:var(--R);
+  padding:12px 14px;box-shadow:var(--sh);
+}
+.adr-item{flex:1;display:flex;flex-direction:column;gap:4px}
+.adr-arrow{font-size:18px;color:var(--t3);padding-bottom:8px;flex-shrink:0}
+.fi-s{
+  width:100%;padding:8px 10px;
+  border-radius:var(--Rs);
+  background:var(--s2);border:1.5px solid var(--br);
+  color:var(--tx);font-size:13px;font-family:inherit;
+  outline:none;transition:all .18s;
+}
+.fi-s:focus{border-color:var(--p)}
+
+.cat-scroll{
+  display:flex;gap:7px;overflow-x:auto;
+  padding:2px 0 6px;scrollbar-width:none;
+}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-chip{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 10px;border-radius:10px;
+  border:1.5px solid var(--br);background:var(--s2);
+  cursor:pointer;flex-shrink:0;min-width:58px;
+  transition:all .15s;font-family:inherit;
+}
+.cat-chip:active{transform:scale(.93)}
+.cat-chip.on{border-color:var(--p);background:rgba(99,102,241,.1)}
+.cat-chip-ic{font-size:20px}
+.cat-chip-n{font-size:10px;font-weight:700;color:var(--t2);white-space:nowrap}
+.cat-chip.on .cat-chip-n{color:var(--p)}
 .type-seg{display:flex;background:var(--s2);border-radius:var(--Rs);padding:3px;gap:2px;margin-bottom:12px;border:1px solid var(--br)}
 .ts{flex:1;padding:8px 4px;border:none;background:none;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;border-radius:7px;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:4px}
 .ts.on{background:var(--s1);box-shadow:var(--sh)}
@@ -183,18 +232,18 @@ button,input,select{font-family:inherit}
 }
 .amt-inp::placeholder{color:var(--s3)}
 
-.cat-card{background:var(--s1);border:1px solid var(--br);border-radius:var(--R);padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh)}
-.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.cat-card{background:var(--s1);border:1px solid var(--br);border-radius:var(--R);padding:10px 12px;margin-bottom:8px;box-shadow:var(--sh)}
+.cg{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px;max-height:140px;overflow-y:auto}
 .cb{
-  padding:8px 4px;border-radius:8px;border:1.5px solid var(--br);
+  padding:6px 2px;border-radius:8px;border:1.5px solid var(--br);
   background:var(--s2);cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
   transition:all .15s;
 }
 .cb:active{transform:scale(.92)}
 .cb.on{border-color:var(--p);background:rgba(99,102,241,.08)}
-.cb-ic{font-size:18px}
-.cb-n{font-size:9px;font-weight:700;color:var(--t2);text-align:center}
+.cb-ic{font-size:16px}
+.cb-n{font-size:8px;font-weight:700;color:var(--t2);text-align:center}
 .cb.on .cb-n{color:var(--p)}
 
 .fields-card{background:var(--s1);border:1px solid var(--br);border-radius:var(--R);padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh)}
@@ -306,7 +355,7 @@ button,input,select{font-family:inherit}
 .btn-cn{flex:1;padding:12px;border-radius:var(--Rs);border:1.5px solid var(--br);background:none;color:var(--t2);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:calc(var(--BH)+12px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:all .28s;z-index:400;white-space:nowrap;pointer-events:none}
+.toast{position:fixed;bottom:calc(var(--BH)+20px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:all .28s;z-index:400;white-space:nowrap;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── EMPTY ── */
@@ -318,16 +367,17 @@ button,input,select{font-family:inherit}
 /* ── FLOATING AI ── */
 .ai-btn{
   position:fixed;
-  bottom:calc(var(--BH) + 14px);
+  bottom:90px;
   right:16px;
-  width:48px;height:48px;
+  width:52px;height:52px;
   border-radius:50%;
-  background:linear-gradient(135deg,var(--p),var(--sec));
-  border:none;color:#fff;font-size:20px;
+  background:linear-gradient(135deg,#6366F1,#EC4899);
+  border:3px solid rgba(255,255,255,.3);
+  color:#fff;font-size:22px;
   cursor:pointer;
-  box-shadow:0 4px 16px rgba(99,102,241,.45);
+  box-shadow:0 4px 20px rgba(99,102,241,.6);
   display:flex;align-items:center;justify-content:center;
-  z-index:100;
+  z-index:9999;
   animation:glow 2.5s infinite;
 }
 @keyframes glow{
@@ -338,16 +388,16 @@ button,input,select{font-family:inherit}
 /* ── LEN DEN FAB ── */
 .ld-btn{
   position:fixed;
-  bottom:calc(var(--BH) + 14px);
-  right:72px;
-  width:44px;height:44px;
+  bottom:90px;
+  right:76px;
+  width:46px;height:46px;
   border-radius:50%;
-  background:linear-gradient(135deg,var(--g),#059669);
+  background:linear-gradient(135deg,#10B981,#059669);
   border:none;color:#fff;font-size:20px;
   cursor:pointer;
   box-shadow:0 4px 16px rgba(16,185,129,.4);
   display:none;align-items:center;justify-content:center;
-  z-index:100;
+  z-index:9999;
 }
 .ld-btn.on{display:flex}
 
@@ -440,51 +490,51 @@ button,input,select{font-family:inherit}
 
     <!-- ADD -->
     <div class="page" id="pg-add">
-      <!-- Type Segment -->
-      <div class="type-seg">
-        <button class="ts exp on" id="ts-exp" onclick="setType('expense')">💸 Expense</button>
-        <button class="ts inc" id="ts-inc" onclick="setType('income')">💰 Income</button>
-        <button class="ts trf" id="ts-trf" onclick="setType('transfer')">🔄 Transfer</button>
-      </div>
+      <div class="add-wrap">
+        <!-- Type Segment -->
+        <div class="type-seg">
+          <button class="ts exp on" id="ts-exp" onclick="setType('expense')">💸 Expense</button>
+          <button class="ts inc" id="ts-inc" onclick="setType('income')">💰 Income</button>
+          <button class="ts trf" id="ts-trf" onclick="setType('transfer')">🔄 Transfer</button>
+        </div>
 
-      <!-- Amount -->
-      <div class="amt-card">
-        <div class="amt-lbl">Amount</div>
-        <div class="amt-wrap">
-          <span class="amt-sym">₹</span>
+        <!-- Amount -->
+        <div class="amt-row">
+          <span class="amt-rs">₹</span>
           <input class="amt-inp" id="fi-amt" type="number" inputmode="decimal" placeholder="0" autocomplete="off">
         </div>
-      </div>
 
-      <!-- Categories -->
-      <div class="cat-card" id="fg-cat">
-        <span class="sl">Category</span>
-        <div class="cg" id="cat-grid"></div>
-      </div>
-
-      <!-- Fields -->
-      <div class="fields-card">
-        <div class="row2">
-          <div>
-            <label class="fl" id="acc-lbl">Account</label>
-            <select class="fi" id="fi-acc"></select>
+        <!-- Account + Date row -->
+        <div class="acc-date-row" id="fg-acc">
+          <div class="adr-item">
+            <label class="fl" id="acc-lbl">From</label>
+            <select class="fi-s" id="fi-acc"></select>
           </div>
-          <div>
+          <div class="adr-arrow" id="adr-arrow" style="display:none">→</div>
+          <div class="adr-item" id="fg-to" style="display:none">
+            <label class="fl">To</label>
+            <select class="fi-s" id="fi-to"></select>
+          </div>
+          <div class="adr-item" id="adr-date">
             <label class="fl">Date</label>
-            <input class="fi" id="fi-date" type="date">
+            <input class="fi-s" id="fi-date" type="date">
           </div>
         </div>
-        <div id="fg-to" style="display:none;margin-top:10px">
-          <label class="fl">To Account</label>
-          <select class="fi" id="fi-to"></select>
-        </div>
-        <div style="margin-top:10px">
-          <label class="fl">Narration</label>
-          <input class="fi" id="fi-desc" type="text" placeholder="Kisliye? (optional)">
-        </div>
-      </div>
 
-      <button class="btn-add" onclick="addTxn()">Add Transaction</button>
+        <!-- Categories horizontal scroll -->
+        <div id="fg-cat">
+          <div class="fl" style="margin-bottom:6px">Category</div>
+          <div class="cat-scroll" id="cat-grid"></div>
+        </div>
+
+        <!-- Narration -->
+        <div>
+          <label class="fl">Narration</label>
+          <input class="fi" id="fi-desc" type="text" placeholder="Kisliye? (optional)" style="font-size:13px">
+        </div>
+
+        <button class="btn-add" onclick="addTxn()" id="add-btn">Add Expense</button>
+      </div>
     </div>
 
     <!-- LIST -->
@@ -754,21 +804,55 @@ function txrHTML(e,minimal){
 // ── ADD ──
 function setType(t){
   S.txnType=t;
-  ['exp','inc','trf'].forEach(x=>{
-    const el=document.getElementById(`ts-${x}`);
-    el.classList.remove('on');
-  });
+  ['exp','inc','trf'].forEach(x=>document.getElementById(`ts-${x}`).classList.remove('on'));
   document.getElementById(`ts-${t==='expense'?'exp':t==='income'?'inc':'trf'}`).classList.add('on');
   document.getElementById('fg-cat').style.display=t==='transfer'?'none':'block';
-  document.getElementById('fg-to').style.display=t==='transfer'?'block':'none';
-  document.getElementById('acc-lbl').textContent=t==='transfer'?'From Account':'Account';
+  document.getElementById('fg-to').style.display=t==='transfer'?'flex':'none';
+  document.getElementById('adr-arrow').style.display=t==='transfer'?'block':'none';
+  document.getElementById('adr-date').style.display=t==='transfer'?'none':'flex';
+  // For transfer add date separately
+  const tdate=document.getElementById('trf-date-row');
+  if(tdate)tdate.style.display=t==='transfer'?'block':'none';
+  document.getElementById('acc-lbl').textContent=t==='transfer'?'From':'Account';
+  document.getElementById('add-btn').textContent=t==='transfer'?'Transfer Now':t==='income'?'Add Income':'Add Expense';
+  // For transfer, date is inside fields card
+  if(t==='transfer'){
+    // Add date field to fields card if needed
+  }
+}
+
+function getIcon(name){
+  const n=name.toLowerCase();
+  if(n.includes('food')||n.includes('eat')||n.includes('lunch')||n.includes('dinner'))return'🍔';
+  if(n.includes('fuel')||n.includes('petrol')||n.includes('diesel'))return'⛽';
+  if(n.includes('kirana')||n.includes('grocery')||n.includes('sabzi'))return'🛒';
+  if(n.includes('cloth')||n.includes('dress')||n.includes('shirt'))return'👕';
+  if(n.includes('medical')||n.includes('doctor')||n.includes('medicine')||n.includes('hospital'))return'💊';
+  if(n.includes('bill')||n.includes('electric')||n.includes('bijli')||n.includes('utility'))return'⚡';
+  if(n.includes('entertainment')||n.includes('movie')||n.includes('fun'))return'🎬';
+  if(n.includes('transport')||n.includes('auto')||n.includes('cab')||n.includes('bus'))return'🚕';
+  if(n.includes('emi')||n.includes('loan'))return'🏦';
+  if(n.includes('sip')||n.includes('invest')||n.includes('mutual'))return'📈';
+  if(n.includes('shop')||n.includes('amazon')||n.includes('online'))return'🛍️';
+  if(n.includes('edu')||n.includes('school')||n.includes('book')||n.includes('fee'))return'📚';
+  if(n.includes('rent')||n.includes('house')||n.includes('home'))return'🏠';
+  if(n.includes('mobile')||n.includes('phone')||n.includes('recharge'))return'📱';
+  if(n.includes('travel')||n.includes('trip')||n.includes('hotel'))return'✈️';
+  if(n.includes('gym')||n.includes('health')||n.includes('fitness'))return'💪';
+  if(n.includes('gift')||n.includes('present'))return'🎁';
+  if(n.includes('salon')||n.includes('hair')||n.includes('beauty'))return'✂️';
+  if(n.includes('chai')||n.includes('tea')||n.includes('coffee'))return'☕';
+  if(n.includes('veg')||n.includes('fruit'))return'🥦';
+  return ICONS[name]||'📦';
 }
 
 function renderCatGrid(){
-  document.getElementById('cat-grid').innerHTML=S.cats.map(c=>`
-    <button class="cb ${S.selCat===c.id?'on':''}" onclick="selCat(${c.id})">
-      <span class="cb-ic">${ICONS[c.name]||'📦'}</span>
-      <span class="cb-n">${c.name}</span>
+  const cats=document.getElementById('cat-grid');
+  if(!cats)return;
+  cats.innerHTML=S.cats.map(c=>`
+    <button class="cat-chip ${S.selCat===c.id?'on':''}" onclick="selCat(${c.id})">
+      <span class="cat-chip-ic">${getIcon(c.name)}</span>
+      <span class="cat-chip-n">${c.name}</span>
     </button>`).join('');
 }
 function selCat(id){S.selCat=S.selCat===id?null:id;renderCatGrid()}
