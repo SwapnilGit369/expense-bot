@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SwapExp">
@@ -631,6 +632,34 @@ button,input,select{font-family:inherit}
           <button class="tog" id="dark-tog" onclick="toggleTheme()"></button>
         </div>
       </div>
+
+      <div class="card cp">
+        <span class="sl" style="display:block;margin-bottom:12px">Backup & Restore</span>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="si">
+            <div class="sil">
+              <span style="font-size:18px">💾</span>
+              <div>
+                <div class="sit">Backup Data</div>
+                <div class="sis">JSON file download hogi</div>
+              </div>
+            </div>
+            <button class="btn-sm" onclick="backupData()">Download</button>
+          </div>
+          <div class="si" style="border-bottom:none">
+            <div class="sil">
+              <span style="font-size:18px">📂</span>
+              <div>
+                <div class="sit">Restore Data</div>
+                <div class="sis">JSON file se restore karo</div>
+              </div>
+            </div>
+            <button class="btn-sm" onclick="document.getElementById('restore-file').click()" style="background:var(--s2);color:var(--t2);border:1.5px solid var(--br)">Select File</button>
+          </div>
+          <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreData(this)">
+          <div id="backup-info" style="font-size:11px;color:var(--t3)"></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -729,6 +758,9 @@ async function loadAll(){
     S.ledger=Array.isArray(ledger)?ledger:[];
     S.budget=Array.isArray(budget)&&budget.length>0?budget[0]:null;
     if(S.budget)document.getElementById('budget-inp').value=S.budget.total_budget;
+    const lastBackup=localStorage.getItem('lastBackup');
+    const bi=document.getElementById('backup-info');
+    if(bi&&lastBackup)bi.textContent=lastBackup;
     renderAll();
   }catch(e){toast('Error loading data')}
 }
@@ -1336,6 +1368,86 @@ function filterTime(arr,f){
   if(f==='week')return arr.filter(e=>e.date>=wk);
   if(f==='month')return arr.filter(e=>e.date>=ms);
   return arr;
+}
+
+// ── BACKUP & RESTORE ──
+async function backupData(){
+  toast('Backup prepare ho raha hai...');
+  try{
+    const[cats,accs,exps,contacts,ledger,budget]=await Promise.all([
+      SB.get('categories','select=*'),
+      SB.get('accounts','select=*'),
+      SB.get('expenses','select=*'),
+      SB.get('contacts','select=*'),
+      SB.get('ledger_transactions','select=*'),
+      SB.get('budget','select=*')
+    ]);
+    const backup={
+      version:1,
+      date:new Date().toISOString(),
+      data:{categories:cats,accounts:accs,expenses:exps,contacts,ledger_transactions:ledger,budget}
+    };
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`swapexp-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    const info=`Last backup: ${new Date().toLocaleString('en-IN')}`;
+    localStorage.setItem('lastBackup',info);
+    document.getElementById('backup-info').textContent=info;
+    toast('Backup download ho gaya ✓');
+  }catch(e){toast('Backup error: '+e.message)}
+}
+
+async function restoreData(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const backup=JSON.parse(e.target.result);
+      if(!backup.data){toast('Invalid backup file');return}
+      if(!confirm(`Backup dated ${new Date(backup.date).toLocaleDateString('en-IN')} se restore karein? Existing data replace ho jaayega!`))return;
+      toast('Restore ho raha hai...');
+      const{categories,accounts,expenses,contacts,ledger_transactions,budget:budgetData}=backup.data;
+
+      // Clear existing data
+      for(const exp of S.expenses) await SB.del('expenses',exp.id);
+      for(const l of S.ledger) await SB.del('ledger_transactions',l.id);
+      for(const c of S.contacts) await SB.del('contacts',c.id);
+      for(const a of S.accs) await SB.del('accounts',a.id);
+
+      // Restore accounts
+      for(const a of accounts){
+        const{id,...data}=a;
+        await SB.post('accounts',data);
+      }
+      // Restore expenses
+      for(const ex of expenses){
+        const{id,...data}=ex;
+        await SB.post('expenses',data);
+      }
+      // Restore contacts
+      for(const c of contacts){
+        const{id,...data}=c;
+        await SB.post('contacts',data);
+      }
+      // Restore ledger
+      for(const l of ledger_transactions){
+        const{id,...data}=l;
+        await SB.post('ledger_transactions',data);
+      }
+
+      await loadAll();
+      toast('Restore complete ✓');
+    }catch(err){toast('Restore error: '+err.message)}
+  };
+  reader.readAsText(file);
+  input.value='';
 }
 
 // ── INIT ──
