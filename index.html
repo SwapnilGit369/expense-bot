@@ -778,6 +778,7 @@ function renderHome(){
   const ms=monthStart();
   const mExp=S.expenses.filter(e=>e.date>=ms&&e.type==='expense');
   const mInc=S.expenses.filter(e=>e.date>=ms&&e.type==='income');
+  // transfer_in excluded from income
   const tExp=S.expenses.filter(e=>e.date===today&&e.type==='expense');
   const mAmt=sm(mExp),tAmt=sm(tExp),iAmt=sm(mInc);
 
@@ -805,8 +806,8 @@ function renderHome(){
 
   // Account chips
   document.getElementById('acc-chips').innerHTML=S.accs.map(a=>{
-    const sp=S.expenses.filter(e=>e.account_id===a.id&&e.type==='expense').reduce((s,e)=>s+parseFloat(e.amount),0);
-    const ic=S.expenses.filter(e=>e.account_id===a.id&&e.type==='income').reduce((s,e)=>s+parseFloat(e.amount),0);
+    const sp=S.expenses.filter(e=>e.account_id===a.id&&(e.type==='expense'||e.type==='transfer')).reduce((s,e)=>s+parseFloat(e.amount),0);
+    const ic=S.expenses.filter(e=>e.account_id===a.id&&(e.type==='income'||e.type==='transfer_in')).reduce((s,e)=>s+parseFloat(e.amount),0);
     const bal=(parseFloat(a.opening_balance)||0)+ic-sp;
     return `<div class="acc-chip"><div class="ac-name">${a.name}</div><div class="ac-bal" style="color:${bal<0?'var(--r)':'var(--g)'}">${bal<0?'-':''}₹${fN(Math.abs(bal))}</div><div class="ac-type">${a.type}</div></div>`;
   }).join('');
@@ -822,7 +823,7 @@ function renderHome(){
 function txrHTML(e,minimal){
   const cat=e.categories?.name||'Other';
   const ci=PAL[S.cats.findIndex(c=>c.name===cat)%PAL.length]||'#94A3B8';
-  const isInc=e.type==='income',isTrf=e.type==='transfer';
+  const isInc=e.type==='income',isTrf=e.type==='transfer'||e.type==='transfer_in';
   const amtStr=isInc?`+₹${fN(e.amount)}`:isTrf?`↔ ₹${fN(e.amount)}`:`-₹${fN(e.amount)}`;
   const amtCls=isInc?'c-pos':isTrf?'c-trf':'c-neg';
   return `<div class="txr">
@@ -918,7 +919,7 @@ async function addTxn(){
     const toA=S.accs.find(a=>a.id===parseInt(toId));
     const catId=S.cats[0]?.id;
     await SB.post('expenses',{amount:amt,category_id:catId,description:`Transfer to ${toA?.name}`,date,account_id:parseInt(accId),source:'mobile',type:'transfer'});
-    await SB.post('expenses',{amount:amt,category_id:catId,description:`Transfer from ${fromA?.name}`,date,account_id:parseInt(toId),source:'mobile',type:'income'});
+    await SB.post('expenses',{amount:amt,category_id:catId,description:`Transfer from ${fromA?.name}`,date,account_id:parseInt(toId),source:'mobile',type:'transfer_in'});
     toast('Transfer done ✓');
   }else{
     const catId=S.txnType==='income'?S.cats[0]?.id:S.selCat;
