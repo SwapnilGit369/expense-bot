@@ -219,8 +219,8 @@ button,input,select{font-family:inherit}
 .cat-chip-ic{font-size:20px}
 .cat-chip-n{font-size:10px;font-weight:700;color:var(--t2);white-space:nowrap}
 .cat-chip.on .cat-chip-n{color:var(--p)}
-.type-seg{display:flex;background:var(--s2);border-radius:var(--Rs);padding:3px;gap:2px;margin-bottom:12px;border:1px solid var(--br)}
-.ts{flex:1;padding:8px 4px;border:none;background:none;font-size:11px;font-weight:700;color:var(--t3);cursor:pointer;border-radius:7px;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:4px}
+.type-seg{display:flex;background:var(--s2);border-radius:var(--Rs);padding:4px;gap:3px;margin-bottom:12px;border:1px solid var(--br)}
+.ts{flex:1;padding:13px 4px;border:none;background:none;font-size:12px;font-weight:700;color:var(--t3);cursor:pointer;border-radius:8px;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px}
 .ts.on{background:var(--s1);box-shadow:var(--sh)}
 .ts.on.exp{color:var(--r)}
 .ts.on.inc{color:var(--g)}
@@ -372,19 +372,21 @@ button,input,select{font-family:inherit}
 
 /* ── FLOATING AI ── */
 .ai-btn{
-  position:fixed;
-  bottom:90px;
-  right:16px;
-  width:52px;height:52px;
+  position:fixed !important;
+  bottom:84px !important;
+  right:16px !important;
+  width:54px;height:54px;
   border-radius:50%;
   background:linear-gradient(135deg,#6366F1,#EC4899);
-  border:3px solid rgba(255,255,255,.3);
+  border:3px solid rgba(255,255,255,.25);
   color:#fff;font-size:22px;
   cursor:pointer;
-  box-shadow:0 4px 20px rgba(99,102,241,.6);
-  display:flex;align-items:center;justify-content:center;
-  z-index:9999;
+  box-shadow:0 6px 24px rgba(99,102,241,.6);
+  display:flex !important;align-items:center;justify-content:center;
+  z-index:99999 !important;
   animation:glow 2.5s infinite;
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
 }
 @keyframes glow{
   0%,100%{box-shadow:0 4px 16px rgba(99,102,241,.45)}
@@ -564,6 +566,14 @@ button,input,select{font-family:inherit}
         <button class="chip" onclick="filterRep('week',this)">This Week</button>
         <button class="chip" onclick="filterRep('all',this)">All Time</button>
       </div>
+
+      <!-- Income vs Expense -->
+      <div class="card cp">
+        <span class="sl" style="display:block;margin-bottom:12px">Income vs Expense</span>
+        <div id="inc-exp-compare"></div>
+      </div>
+
+      <!-- Category Pie -->
       <div class="card cp">
         <span class="sl" style="display:block;margin-bottom:12px">Category Breakdown</span>
         <div class="pie-wrap">
@@ -571,14 +581,32 @@ button,input,select{font-family:inherit}
           <div class="pie-leg" id="pie-leg"></div>
         </div>
       </div>
+
+      <!-- Top 5 Expenses -->
+      <div class="card cp">
+        <span class="sl" style="display:block;margin-bottom:12px">Top 5 Expenses</span>
+        <div id="top5"></div>
+      </div>
+
+      <!-- 7 Day Bar -->
       <div class="card cp">
         <span class="sl" style="display:block;margin-bottom:14px">Last 7 Days</span>
         <div class="bar-chart" id="bar-chart"></div>
       </div>
+
+      <!-- Monthly Trend -->
       <div class="card cp">
         <span class="sl" style="display:block;margin-bottom:12px">Monthly Trend</span>
         <div id="monthly-trend"></div>
       </div>
+
+      <!-- Daily Average + Stats -->
+      <div class="card cp">
+        <span class="sl" style="display:block;margin-bottom:12px">Quick Stats</span>
+        <div id="quick-stats"></div>
+      </div>
+
+      <!-- By Account -->
       <div class="card cp">
         <span class="sl" style="display:block;margin-bottom:12px">By Account</span>
         <div id="acc-breakdown"></div>
@@ -613,6 +641,11 @@ button,input,select{font-family:inherit}
         <div class="sec" style="margin-bottom:10px"><span class="sl">Categories</span></div>
         <div class="add-r">
           <input class="fi" id="cat-name" placeholder="Category name">
+          <select class="fi" id="cat-type" style="flex:0 0 90px;font-size:12px">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            <option value="both">Both</option>
+          </select>
           <button class="btn-sm" onclick="addCat()">+</button>
         </div>
         <div id="cat-list"></div>
@@ -887,11 +920,16 @@ function getIcon(name){
 function renderCatGrid(){
   const cats=document.getElementById('cat-grid');
   if(!cats)return;
-  cats.innerHTML=S.cats.map(c=>`
+  const filtered=S.cats.filter(c=>{
+    const ct=c.cat_type||'expense';
+    if(S.txnType==='income') return ct==='income'||ct==='both';
+    return ct==='expense'||ct==='both'||!c.cat_type;
+  });
+  cats.innerHTML=filtered.length?filtered.map(c=>`
     <button class="cat-chip ${S.selCat===c.id?'on':''}" onclick="selCat(${c.id})">
       <span class="cat-chip-ic">${getIcon(c.name)}</span>
       <span class="cat-chip-n">${c.name}</span>
-    </button>`).join('');
+    </button>`).join(''):'<div style="color:var(--t3);font-size:12px;padding:8px">No categories — Settings mein add karo</div>';
 }
 function selCat(id){S.selCat=S.selCat===id?null:id;renderCatGrid()}
 
@@ -1216,7 +1254,7 @@ function renderSettings(){
     S.accs.map(a=>`<div class="si"><div class="sil"><span style="font-size:16px">${a.type==='bank'?'🏦':'💵'}</span><div><div class="sit">${a.name}</div><div class="sis">${a.type} · Opening ₹${fN(a.opening_balance||0)}</div></div></div><button class="ab ab-d" onclick="delAcc(${a.id})">🗑️</button></div>`).join(''):
     '<div style="color:var(--t3);font-size:12px;padding:6px 0">No accounts</div>';
   document.getElementById('cat-list').innerHTML=S.cats.length?
-    S.cats.map(c=>`<div class="si"><div class="sil"><span>${ICONS[c.name]||'📦'}</span><div class="sit">${c.name}</div></div><button class="ab ab-d" onclick="delCat(${c.id})">🗑️</button></div>`).join(''):
+    S.cats.map(c=>`<div class="si"><div class="sil"><span>${getIcon(c.name)}</span><div><div class="sit">${c.name}</div><div class="sis">${c.cat_type||'expense'}</div></div></div><button class="ab ab-d" onclick="delCat(${c.id})">🗑️</button></div>`).join(''):
     '<div style="color:var(--t3);font-size:12px;padding:6px 0">No categories</div>';
   if(S.budget){
     const ms=monthStart();
@@ -1238,8 +1276,9 @@ async function delAcc(id){
 }
 async function addCat(){
   const name=document.getElementById('cat-name').value.trim();
+  const ctype=document.getElementById('cat-type')?.value||'expense';
   if(!name){toast('Category naam daalo');return}
-  const r=await SB.post('categories',{name});
+  const r=await SB.post('categories',{name,cat_type:ctype});
   if(Array.isArray(r)&&r.length>0){S.cats.push(r[0]);document.getElementById('cat-name').value='';renderAll();toast('Category added ✓')}
 }
 async function delCat(id){
