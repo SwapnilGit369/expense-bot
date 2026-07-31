@@ -916,6 +916,17 @@ function getIcon(name){
   if(n.includes('salon')||n.includes('hair')||n.includes('beauty'))return'✂️';
   if(n.includes('chai')||n.includes('tea')||n.includes('coffee'))return'☕';
   if(n.includes('veg')||n.includes('fruit'))return'🥦';
+  // Income categories
+  if(n.includes('salary')||n.includes('wage')||n.includes('ctc'))return'💼';
+  if(n.includes('business')||n.includes('profit'))return'🏢';
+  if(n.includes('freelance')||n.includes('client')||n.includes('project'))return'💻';
+  if(n.includes('rent income')||n.includes('rental'))return'🏠';
+  if(n.includes('interest')||n.includes('fd')||n.includes('saving'))return'🏦';
+  if(n.includes('dividend')||n.includes('stock')||n.includes('share'))return'📊';
+  if(n.includes('other income')||n.includes('misc'))return'💰';
+  if(n.includes('bonus')||n.includes('incentive'))return'🎯';
+  if(n.includes('pension')||n.includes('retire'))return'👴';
+  if(n.includes('refund')||n.includes('cashback'))return'↩️';
   return ICONS[name]||'📦';
 }
 
