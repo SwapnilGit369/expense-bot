@@ -175,12 +175,12 @@ button,input,select{font-family:inherit}
 .amt-row{
   display:flex;align-items:center;justify-content:center;
   background:var(--s1);border:1px solid var(--br);border-radius:var(--R);
-  padding:14px 16px;gap:6px;box-shadow:var(--sh);
+  padding:10px 16px;gap:6px;box-shadow:var(--sh);margin-bottom:10px;
 }
-.amt-rs{font-size:22px;font-weight:700;color:var(--t3);flex-shrink:0}
+.amt-rs{font-size:18px;font-weight:700;color:var(--t3);flex-shrink:0}
 .amt-inp{
   border:none;background:none;outline:none;
-  font-size:36px;font-weight:900;color:var(--tx);
+  font-size:28px;font-weight:900;color:var(--tx);
   width:100%;text-align:center;letter-spacing:-1px;
   font-variant-numeric:tabular-nums;font-family:inherit;
 }
@@ -203,24 +203,25 @@ button,input,select{font-family:inherit}
 .fi-s:focus{border-color:var(--p)}
 
 .cat-scroll{
-  display:flex;gap:7px;overflow-x:auto;
-  padding:2px 0 6px;scrollbar-width:none;
+  display:flex;gap:6px;overflow-x:auto;
+  padding:2px 0 4px;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
 }
 .cat-scroll::-webkit-scrollbar{display:none}
 .cat-chip{
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:8px 10px;border-radius:10px;
+  display:flex;flex-direction:row;align-items:center;gap:6px;
+  padding:8px 12px;border-radius:20px;
   border:1.5px solid var(--br);background:var(--s2);
-  cursor:pointer;flex-shrink:0;min-width:58px;
-  transition:all .15s;font-family:inherit;
+  cursor:pointer;flex-shrink:0;
+  transition:all .15s;font-family:inherit;white-space:nowrap;
 }
-.cat-chip:active{transform:scale(.93)}
-.cat-chip.on{border-color:var(--p);background:rgba(99,102,241,.1)}
-.cat-chip-ic{font-size:20px}
-.cat-chip-n{font-size:10px;font-weight:700;color:var(--t2);white-space:nowrap}
+.cat-chip:active{transform:scale(.95)}
+.cat-chip.on{border-color:var(--p);background:rgba(99,102,241,.12)}
+.cat-chip-ic{font-size:16px;line-height:1}
+.cat-chip-n{font-size:12px;font-weight:700;color:var(--t2)}
 .cat-chip.on .cat-chip-n{color:var(--p)}
-.type-seg{display:flex;background:var(--s2);border-radius:var(--Rs);padding:4px;gap:3px;margin-bottom:12px;border:1px solid var(--br)}
-.ts{flex:1;padding:13px 4px;border:none;background:none;font-size:12px;font-weight:700;color:var(--t3);cursor:pointer;border-radius:8px;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px}
+.type-seg{display:flex;background:var(--s2);border-radius:14px;padding:5px;gap:4px;margin-bottom:12px;border:1px solid var(--br)}
+.ts{flex:1;padding:16px 4px;border:none;background:none;font-size:13px;font-weight:800;color:var(--t3);cursor:pointer;border-radius:10px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;letter-spacing:.1px}
 .ts.on{background:var(--s1);box-shadow:var(--sh)}
 .ts.on.exp{color:var(--r)}
 .ts.on.inc{color:var(--g)}
@@ -373,20 +374,21 @@ button,input,select{font-family:inherit}
 /* ── FLOATING AI ── */
 .ai-btn{
   position:fixed !important;
-  bottom:84px !important;
+  bottom:80px !important;
   right:16px !important;
-  width:54px;height:54px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#6366F1,#EC4899);
-  border:3px solid rgba(255,255,255,.25);
-  color:#fff;font-size:22px;
-  cursor:pointer;
-  box-shadow:0 6px 24px rgba(99,102,241,.6);
-  display:flex !important;align-items:center;justify-content:center;
-  z-index:99999 !important;
-  animation:glow 2.5s infinite;
-  transform:translateZ(0);
-  -webkit-transform:translateZ(0);
+  width:56px !important;height:56px !important;
+  border-radius:50% !important;
+  background:linear-gradient(135deg,#6366F1,#EC4899) !important;
+  border:3px solid rgba(255,255,255,.3) !important;
+  color:#fff !important;font-size:24px !important;
+  cursor:pointer !important;
+  box-shadow:0 6px 28px rgba(99,102,241,.65) !important;
+  display:flex !important;align-items:center !important;justify-content:center !important;
+  z-index:2147483647 !important;
+  animation:glow 2.5s infinite !important;
+  transform:translateZ(0) !important;
+  -webkit-transform:translateZ(0) !important;
+  will-change:transform !important;
 }
 @keyframes glow{
   0%,100%{box-shadow:0 4px 16px rgba(99,102,241,.45)}
