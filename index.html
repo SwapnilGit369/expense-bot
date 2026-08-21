@@ -641,14 +641,22 @@ button,input,select{font-family:inherit}
       </div>
       <div class="card cp">
         <div class="sec" style="margin-bottom:10px"><span class="sl">Categories</span></div>
-        <div class="add-r">
-          <input class="fi" id="cat-name" placeholder="Category name">
-          <select class="fi" id="cat-type" style="flex:0 0 90px;font-size:12px">
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-            <option value="both">Both</option>
-          </select>
-          <button class="btn-sm" onclick="addCat()">+</button>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input class="fi" id="cat-name" placeholder="Category naam" oninput="suggestIcons(this.value)" style="flex:1;font-size:13px;padding:9px 11px">
+            <select class="fi" id="cat-type" style="flex:0 0 85px;font-size:12px;padding:9px 8px">
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0">Icon:</div>
+            <div id="icon-suggest" style="display:flex;gap:6px;flex:1;flex-wrap:wrap"></div>
+            <div id="cat-icon-sel" style="font-size:22px;width:36px;height:36px;background:var(--s2);border-radius:8px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--br);flex-shrink:0">📦</div>
+          </div>
+          <input type="hidden" id="cat-icon" value="📦">
+          <button class="btn-sm" onclick="addCat()" style="width:100%;padding:10px;border-radius:10px">Add Category</button>
         </div>
         <div id="cat-list"></div>
       </div>
@@ -811,7 +819,7 @@ function renderHome(){
   document.getElementById('hdr-month').textContent=now.toLocaleString('default',{month:'short',year:'numeric'});
   const today=now.toISOString().split('T')[0];
   const ms=monthStart();
-  const mExp=S.expenses.filter(e=>e.date>=ms&&e.type==='expense');
+  const mExp=S.expenses.filter(e=>e.date>=ms&&e.type==='expense'&&!e.is_lenden);
   const mInc=S.expenses.filter(e=>e.date>=ms&&e.type==='income');
   // transfer_in excluded from income
   const tExp=S.expenses.filter(e=>e.date===today&&e.type==='expense');
@@ -862,9 +870,9 @@ function txrHTML(e,minimal){
   const amtStr=isInc?`+₹${fN(e.amount)}`:isTrf?`↔ ₹${fN(e.amount)}`:`-₹${fN(e.amount)}`;
   const amtCls=isInc?'c-pos':isTrf?'c-trf':'c-neg';
   return `<div class="txr">
-    <div class="txr-ic" style="background:${ci}18">${isInc?'💰':isTrf?'🔄':ICONS[cat]||'📦'}</div>
+    <div class="txr-ic" style="background:${ci}18">${isInc?'💰':isTrf?'🔄':getIcon(cat, e.categories?.icon)}</div>
     <div class="txr-b">
-      <div class="txr-n">${e.description||cat}</div>
+      <div class="txr-n">${e.description||cat} ${e.is_lenden?'<span style="font-size:9px;background:rgba(99,102,241,.15);color:var(--p);padding:2px 6px;border-radius:4px;font-weight:700">LENDEN</span>':''}</div>
       <div class="txr-m">${cat}${e.accounts?.name?' · '+e.accounts.name:''} · ${fD(e.date)}</div>
     </div>
     <div class="txr-r">
@@ -894,7 +902,8 @@ function setType(t){
   }
 }
 
-function getIcon(name){
+function getIcon(name, storedIcon){
+  if(storedIcon) return storedIcon;
   const n=name.toLowerCase();
   if(n.includes('food')||n.includes('eat')||n.includes('lunch')||n.includes('dinner'))return'🍔';
   if(n.includes('fuel')||n.includes('petrol')||n.includes('diesel'))return'⛽';
@@ -940,7 +949,7 @@ function renderCatGrid(){
   });
   cats.innerHTML=filtered.length?filtered.map(c=>`
     <button class="cat-chip ${S.selCat===c.id?'on':''}" onclick="selCat(${c.id})">
-      <span class="cat-chip-ic">${getIcon(c.name)}</span>
+      <span class="cat-chip-ic">${getIcon(c.name,c.icon)}</span>
       <span class="cat-chip-n">${c.name}</span>
     </button>`).join(''):'<div style="color:var(--t3);font-size:12px;padding:8px">No categories — Settings mein add karo</div>';
 }
@@ -954,11 +963,23 @@ function renderAccSel(){
   document.getElementById('fi-to').innerHTML=opts;
 }
 
+function toggleLenDen(){
+  const tog=document.getElementById('ld-tog');
+  const inp=document.getElementById('fi-islenden');
+  const isOn=tog.classList.contains('on');
+  isOn?tog.classList.remove('on'):tog.classList.add('on');
+  inp.value=isOn?'false':'true';
+  const wrap=document.getElementById('fg-lenden-toggle');
+  wrap.style.borderColor=isOn?'var(--br)':'var(--p)';
+  wrap.style.background=isOn?'var(--s1)':'rgba(99,102,241,.06)';
+}
+
 async function addTxn(){
   const amt=parseFloat(document.getElementById('fi-amt').value);
   const desc=document.getElementById('fi-desc').value.trim();
   const date=document.getElementById('fi-date').value||new Date().toISOString().split('T')[0];
   const accId=document.getElementById('fi-acc').value;
+  const isLenDen=document.getElementById('fi-islenden')?.value==='true';
   if(!amt||amt<=0){toast('Amount daalo');return}
   if(!accId){toast('Pehle Settings mein account banao');return}
   if(S.txnType==='expense'&&!S.selCat){toast('Category select karo');return}
@@ -974,7 +995,7 @@ async function addTxn(){
     toast('Transfer done ✓');
   }else{
     const catId=S.txnType==='income'?S.cats[0]?.id:S.selCat;
-    const r=await SB.post('expenses',{amount:amt,category_id:catId,description:desc,date,account_id:parseInt(accId),source:'mobile',type:S.txnType});
+    const r=await SB.post('expenses',{amount:amt,category_id:catId,description:desc,date,account_id:parseInt(accId),source:'mobile',type:S.txnType,is_lenden:isLenDen});
     if(Array.isArray(r)&&r.length>0){
       const cat=S.cats.find(c=>c.id===catId);
       const acc=S.accs.find(a=>a.id===parseInt(accId));
@@ -987,6 +1008,8 @@ async function addTxn(){
   document.getElementById('fi-amt').value='';
   document.getElementById('fi-desc').value='';
   S.selCat=null;
+  const ldtog=document.getElementById('ld-tog');
+  if(ldtog){ldtog.classList.remove('on');document.getElementById('fi-islenden').value='false';document.getElementById('fg-lenden-toggle').style.cssText='background:var(--s1);border:1.5px solid var(--br);border-radius:var(--Rs);padding:11px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer';}
   await loadAll();
   switchPage('home',document.querySelectorAll('.nb')[0]);
 }
@@ -1044,7 +1067,7 @@ async function saveEdit(id){
 
 // ── REPORTS ──
 function renderReports(){
-  const list=filterTime(S.expenses,S.repFilter).filter(e=>e.type==='expense');
+  const list=filterTime(S.expenses,S.repFilter).filter(e=>e.type==='expense'&&!e.is_lenden);
   const total=sm(list);
 
   // Pie
@@ -1267,7 +1290,7 @@ function renderSettings(){
     S.accs.map(a=>`<div class="si"><div class="sil"><span style="font-size:16px">${a.type==='bank'?'🏦':'💵'}</span><div><div class="sit">${a.name}</div><div class="sis">${a.type} · Opening ₹${fN(a.opening_balance||0)}</div></div></div><button class="ab ab-d" onclick="delAcc(${a.id})">🗑️</button></div>`).join(''):
     '<div style="color:var(--t3);font-size:12px;padding:6px 0">No accounts</div>';
   document.getElementById('cat-list').innerHTML=S.cats.length?
-    S.cats.map(c=>`<div class="si"><div class="sil"><span>${getIcon(c.name)}</span><div><div class="sit">${c.name}</div><div class="sis">${c.cat_type||'expense'}</div></div></div><button class="ab ab-d" onclick="delCat(${c.id})">🗑️</button></div>`).join(''):
+    S.cats.map(c=>`<div class="si"><div class="sil"><span style="font-size:20px">${getIcon(c.name,c.icon)}</span><div><div class="sit">${c.name}</div><div class="sis">${c.cat_type||'expense'}</div></div></div><button class="ab ab-d" onclick="delCat(${c.id})">🗑️</button></div>`).join(''):
     '<div style="color:var(--t3);font-size:12px;padding:6px 0">No categories</div>';
   if(S.budget){
     const ms=monthStart();
@@ -1287,12 +1310,97 @@ async function delAcc(id){
   if(!confirm('Delete account?'))return;
   await SB.del('accounts',id);S.accs=S.accs.filter(a=>a.id!==id);renderAll();toast('Deleted');
 }
+const ICON_MAP=[
+  {k:['food','eat','lunch','dinner','khana','restaurant','snack']},
+  {k:['fuel','petrol','diesel','gas','cng']},
+  {k:['kirana','grocery','sabzi','vegetable','fruit','market']},
+  {k:['cloth','dress','shirt','pant','fashion','wear','laundry']},
+  {k:['medical','doctor','medicine','hospital','health','pharmacy','chemist']},
+  {k:['bill','electric','bijli','utility','water','gas bill']},
+  {k:['entertainment','movie','fun','cinema','outing','party']},
+  {k:['transport','auto','cab','bus','travel','commute','metro','uber','ola']},
+  {k:['emi','loan','credit','debt']},
+  {k:['sip','invest','mutual','fund','gold']},
+  {k:['shop','amazon','flipkart','online','purchase','buy']},
+  {k:['edu','school','book','fee','course','tuition','college']},
+  {k:['rent income','rental','property']},
+  {k:['salary','wage','ctc','job','office']},
+  {k:['business','profit','company','firm','shop income']},
+  {k:['freelance','client','project','gig','work']},
+  {k:['interest','fd','saving','bank income']},
+  {k:['dividend','stock','share','market','equity']},
+  {k:['mobile','phone','recharge','internet','data']},
+  {k:['gym','fitness','yoga','sport','exercise']},
+  {k:['gift','present','occasion']},
+  {k:['salon','hair','beauty','spa','grooming']},
+  {k:['chai','tea','coffee','cafe']},
+  {k:['trip','tour','hotel','flight','holiday','vacation']},
+  {k:['bonus','incentive','reward','commission']},
+  {k:['refund','cashback','return']},
+  {k:['other','misc','general','miscellaneous']},
+];
+
+const ALL_ICONS=['😀','😊','🎯','💡','🔥','⭐','💎','🎪','🎨','🎭','🎬','🎤',
+'🍔','🍕','🍜','🍱','🥗','🍳','🥤','☕','🍺','🎂',
+'🚗','✈️','🚂','🚕','🛵','🚲','⛽','🚀',
+'🏠','🏢','🏪','🏨','🏗️','🏡',
+'💼','👔','👕','👗','👟','👜','🛍️',
+'💊','🏥','💉','🩺','🧬',
+'📱','💻','⌨️','🖥️','📷','🎮','📺','🔌',
+'💰','💳','💵','🏦','📈','📊','💹','🪙',
+'📚','🎓','✏️','📝','🔬','🔭',
+'⚡','💧','🌡️','🔧','🛠️',
+'🎁','🎊','🎉','🎀','🏆','🥇',
+'💪','🧘','⚽','🏋️','🤸',
+'✂️','💈','🪥','🧴','🪞',
+'🌱','🌿','🍃','🌸','🌻',
+'🤝','👨‍👩‍👧','🏫','⛪','🕌'];
+
+function suggestIcons(name){
+  const n=name.toLowerCase();
+  const auto=getIcon(name);
+  // Find related icons based on keywords
+  const suggestions=new Set([auto]);
+  
+  // Add contextual suggestions
+  if(n.includes('food')||n.includes('eat')||n.includes('khana'))['🍔','🍕','🍜','🥗','🍱','🍳'].forEach(i=>suggestions.add(i));
+  else if(n.includes('fuel')||n.includes('petrol'))['⛽','🚗','🛵','🚌','💧'].forEach(i=>suggestions.add(i));
+  else if(n.includes('kirana')||n.includes('grocery'))['🛒','🥦','🍅','🥛','🧺'].forEach(i=>suggestions.add(i));
+  else if(n.includes('cloth'))['👕','👔','👗','👟','👜','🛍️'].forEach(i=>suggestions.add(i));
+  else if(n.includes('medical')||n.includes('doctor'))['💊','🏥','🩺','💉','🧬','❤️'].forEach(i=>suggestions.add(i));
+  else if(n.includes('bill')||n.includes('electric'))['⚡','💧','🔌','📱','🌐','🏠'].forEach(i=>suggestions.add(i));
+  else if(n.includes('travel')||n.includes('trip'))['✈️','🚂','🚗','🏨','🗺️','🧳'].forEach(i=>suggestions.add(i));
+  else if(n.includes('salary')||n.includes('income'))['💼','💰','🏢','📊','💵','🎯'].forEach(i=>suggestions.add(i));
+  else if(n.includes('invest')||n.includes('sip')||n.includes('stock'))['📈','💹','🪙','💎','🏦','📊'].forEach(i=>suggestions.add(i));
+  else if(n.includes('shop')||n.includes('buy'))['🛍️','🛒','💳','📦','🏪','🎁'].forEach(i=>suggestions.add(i));
+  else ['💡','⭐','🔥','🎯','💎','✨'].forEach(i=>suggestions.add(i));
+
+  const arr=[...suggestions].slice(0,8);
+  document.getElementById('icon-suggest').innerHTML=arr.map(ic=>
+    `<button onclick="selectIcon('${ic}')" style="font-size:22px;width:36px;height:36px;border:1.5px solid var(--br);background:var(--s2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.borderColor='var(--p)'" onmouseout="this.style.borderColor='var(--br)'">${ic}</button>`
+  ).join('');
+  
+  // Auto select first
+  if(arr[0]) selectIcon(arr[0]);
+}
+
+function selectIcon(ic){
+  document.getElementById('cat-icon').value=ic;
+  document.getElementById('cat-icon-sel').textContent=ic;
+  // Highlight selected
+  document.querySelectorAll('#icon-suggest button').forEach(b=>{
+    b.style.borderColor=b.textContent===ic?'var(--p)':'var(--br)';
+    b.style.background=b.textContent===ic?'rgba(99,102,241,.1)':'var(--s2)';
+  });
+}
+
 async function addCat(){
   const name=document.getElementById('cat-name').value.trim();
   const ctype=document.getElementById('cat-type')?.value||'expense';
+  const icon=document.getElementById('cat-icon')?.value||getIcon(name);
   if(!name){toast('Category naam daalo');return}
-  const r=await SB.post('categories',{name,cat_type:ctype});
-  if(Array.isArray(r)&&r.length>0){S.cats.push(r[0]);document.getElementById('cat-name').value='';renderAll();toast('Category added ✓')}
+  const r=await SB.post('categories',{name,cat_type:ctype,icon});
+  if(Array.isArray(r)&&r.length>0){S.cats.push(r[0]);document.getElementById('cat-name').value='';document.getElementById('icon-suggest').innerHTML='';document.getElementById('cat-icon-sel').textContent='📦';document.getElementById('cat-icon').value='📦';renderAll();toast('Category added ✓')}
 }
 async function delCat(id){
   if(!confirm('Delete category?'))return;
@@ -1326,7 +1434,10 @@ async function sendAI(){
     const now=new Date();
     const ms=monthStart();
     const mExp=S.expenses.filter(e=>e.date>=ms);
-    const expTxt=mExp.slice(0,60).map(e=>`${e.date}: ₹${e.amount} ${e.type} (${e.categories?.name||'Other'}) ${e.description||''} [${e.accounts?.name||''}]`).join('\n');
+    const realExp=mExp.filter(e=>!e.is_lenden);
+    const lendenExp=mExp.filter(e=>e.is_lenden);
+    const expTxt=realExp.slice(0,50).map(e=>`${e.date}: ₹${e.amount} ${e.type} (${e.categories?.name||'Other'}) ${e.description||''} [${e.accounts?.name||''}]`).join('\n');
+    const lendenTxt=lendenExp.slice(0,20).map(e=>`${e.date}: ₹${e.amount} (${e.description||'Len Den'}) [${e.accounts?.name||''}]`).join('\n');
     const ldSum=S.contacts.map(c=>{
       const txns=S.ledger.filter(t=>t.contact_id===c.id);
       const g=txns.filter(t=>t.type==='gave').reduce((s,t)=>s+parseFloat(t.amount),0);
@@ -1336,12 +1447,39 @@ async function sendAI(){
     }).join(', ');
     S.aiHist.push({role:'user',content:msg});
     if(S.aiHist.length>10)S.aiHist=S.aiHist.slice(-10);
-    const sys=`You are SwapExp AI, a personal finance assistant for an Indian user.
-Month: ${now.toLocaleString('default',{month:'long',year:'numeric'})}
-Spent: ₹${fN(sm(mExp.filter(e=>e.type==='expense')))} | Income: ₹${fN(sm(mExp.filter(e=>e.type==='income')))}${S.budget?` | Budget: ₹${fN(S.budget.total_budget)}`:''}
-Len Den: ${ldSum||'None'}
-Transactions:\n${expTxt||'None'}
-Reply in same language as user (Hindi/Hinglish/English). Concise, max 120 words.`;
+    // Category wise breakdown for AI
+    const catBreakdown={};
+    realExp.forEach(e=>{const c=e.categories?.name||'Other';catBreakdown[c]=(catBreakdown[c]||0)+parseFloat(e.amount)});
+    const catSummary=Object.entries(catBreakdown).sort((a,b)=>b[1]-a[1]).map(([c,a])=>`${c}: ₹${fN(a)}`).join(', ');
+    const totalSpent=sm(realExp);
+    const totalInc=sm(mExp.filter(e=>e.type==='income'));
+
+    const sys=`You are SwapExp AI, a smart personal finance assistant for an Indian user. Answer questions about their expenses accurately.
+
+=== ${now.toLocaleString('default',{month:'long',year:'numeric'})} SUMMARY ===
+Total Spent: ₹${fN(totalSpent)}
+Total Income: ₹${fN(totalInc)}
+Net Savings: ₹${fN(totalInc-totalSpent)}${S.budget?`
+Budget: ₹${fN(S.budget.total_budget)} | Used: ${Math.round((totalSpent/parseFloat(S.budget.total_budget))*100)}%`:''}
+
+=== CATEGORY WISE SPENDING ===
+${catSummary||'No data'}
+
+=== ALL TRANSACTIONS THIS MONTH ===
+${expTxt||'No transactions'}
+
+=== LEN DEN (NOT IN EXPENSE) ===
+${lendenTxt||'None'}
+
+=== LEN DEN BALANCES ===
+${ldSum||'None'}
+
+Instructions:
+- Reply in SAME language as user (Hindi/Hinglish/English)
+- Be specific with numbers and categories
+- Max 150 words
+- If asked "kahan zyada kharch hua" — show top categories with amounts
+- If asked "kitna bacha" — calculate from income minus expense`;
     const res=await fetch(CF_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:sys},...S.aiHist]})});
     const data=await res.json();
     document.getElementById(tid)?.remove();
