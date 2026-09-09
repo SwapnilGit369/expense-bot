@@ -1,1 +1,1 @@
-const GEMINI_KEY = 'AIza_tumhari_actual_key_yahan';
+const GEMINI_KEY = 'AQ.Ab8RN6L1h4YNoaIY7MuzPoJTXvVFrCnZbl5S6DkVvsaLIjqYAQ';
