@@ -761,7 +761,7 @@ button,input,select{font-family:inherit}
 // ── CONFIG ──
 const SB_URL='https://jllnfocnsvgnqdmzrnue.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsbG5mb2Nuc3ZnbnFkbXpybnVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDIxOTUsImV4cCI6MjEwMDUxODE5NX0.ofUuGFvzfMKWLRN72DV_Y5Q7vbbxts44wvU_zCkmBiY';
-const CF_URL='https://groq-proxy.swapnilpatidar7bg.workers.dev';
+const GEMINI_KEY='AQ.Ab8RN6L1h4YNoaIY7MuzPoJTXvVFrCnZbl5S6DkVvsaLIjqYAQ'; // Replace with your key
 
 // ── SUPABASE ──
 const SB={
@@ -1480,10 +1480,25 @@ Instructions:
 - Max 150 words
 - If asked "kahan zyada kharch hua" — show top categories with amounts
 - If asked "kitna bacha" — calculate from income minus expense`;
-    const res=await fetch(CF_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:sys},...S.aiHist]})});
+    // Build Gemini conversation
+    const geminiMsgs=[];
+    // Add history
+    for(const h of S.aiHist){
+      geminiMsgs.push({role:h.role==='user'?'user':'model',parts:[{text:h.content}]});
+    }
+    
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        system_instruction:{parts:[{text:sys}]},
+        contents:geminiMsgs,
+        generationConfig:{maxOutputTokens:300,temperature:0.7}
+      })
+    });
     const data=await res.json();
     document.getElementById(tid)?.remove();
-    const reply=data.reply||'Kuch problem aayi, try again!';
+    const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||data.error?.message||'Kuch problem aayi, try again!';
     S.aiHist.push({role:'assistant',content:reply});
     addMsg(reply,'ai');
   }catch{
