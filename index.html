@@ -563,56 +563,113 @@ button,input,select{font-family:inherit}
 
     <!-- REPORTS -->
     <div class="page" id="pg-reports">
-      <div class="chips">
-        <button class="chip on" onclick="filterRep('month',this)">This Month</button>
-        <button class="chip" onclick="filterRep('week',this)">This Week</button>
-        <button class="chip" onclick="filterRep('all',this)">All Time</button>
+
+      <!-- Filter Row -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <div class="chips" style="margin-bottom:0;flex:1">
+          <button class="chip on" onclick="filterRep('month',this)">This Month</button>
+          <button class="chip" onclick="filterRep('lastmonth',this)">Last Month</button>
+          <button class="chip" onclick="filterRep('week',this)">This Week</button>
+          <button class="chip" onclick="filterRep('all',this)">All Time</button>
+          <button class="chip" onclick="filterRep('custom',this)">Custom</button>
+        </div>
       </div>
 
-      <!-- Income vs Expense -->
+      <!-- Custom Date Range -->
+      <div id="custom-date-row" style="display:none;background:var(--s1);border:1px solid var(--br);border-radius:var(--Rs);padding:10px 12px;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label class="fl">From</label><input class="fi" type="date" id="rep-from" oninput="renderReports()" style="font-size:12px;padding:7px 9px"></div>
+          <div><label class="fl">To</label><input class="fi" type="date" id="rep-to" oninput="renderReports()" style="font-size:12px;padding:7px 9px"></div>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div style="margin-bottom:10px">
+        <select class="fi" id="rep-cat-filter" onchange="renderReports()" style="font-size:12px;padding:8px 10px">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+
+      <!-- P&L Summary Cards -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+        <div style="background:var(--r-bg);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:10px;text-align:center">
+          <div style="font-size:9px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:.4px">Expense</div>
+          <div style="font-size:15px;font-weight:900;color:var(--r);margin-top:3px">₹<span id="rep-total-exp">0</span></div>
+        </div>
+        <div style="background:var(--g-bg);border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:10px;text-align:center">
+          <div style="font-size:9px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.4px">Income</div>
+          <div style="font-size:15px;font-weight:900;color:var(--g);margin-top:3px">₹<span id="rep-total-inc">0</span></div>
+        </div>
+        <div style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:10px;text-align:center">
+          <div style="font-size:9px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.4px">Saved</div>
+          <div style="font-size:15px;font-weight:900;color:var(--p);margin-top:3px">₹<span id="rep-total-sav">0</span></div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="card cp" style="margin-bottom:10px">
+        <div id="quick-stats"></div>
+      </div>
+
+      <!-- Income vs Expense Bar -->
       <div class="card cp">
-        <span class="sl" style="display:block;margin-bottom:12px">Income vs Expense</span>
+        <span class="sl" style="display:block;margin-bottom:10px">💰 Income vs Expense</span>
         <div id="inc-exp-compare"></div>
       </div>
 
-      <!-- Category Pie -->
+      <!-- Category Donut + Legend -->
       <div class="card cp">
-        <span class="sl" style="display:block;margin-bottom:12px">Category Breakdown</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span class="sl">🍩 Category Breakdown</span>
+        </div>
         <div class="pie-wrap">
-          <svg id="pie-svg" width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0"></svg>
+          <svg id="pie-svg" width="130" height="130" viewBox="0 0 130 130" style="flex-shrink:0"></svg>
           <div class="pie-leg" id="pie-leg"></div>
         </div>
       </div>
 
-      <!-- Top 5 Expenses -->
+      <!-- Category Bar Chart -->
       <div class="card cp">
-        <span class="sl" style="display:block;margin-bottom:12px">Top 5 Expenses</span>
-        <div id="top5"></div>
-      </div>
-
-      <!-- 7 Day Bar -->
-      <div class="card cp">
-        <span class="sl" style="display:block;margin-bottom:14px">Last 7 Days</span>
-        <div class="bar-chart" id="bar-chart"></div>
+        <span class="sl" style="display:block;margin-bottom:12px">📊 Category Comparison</span>
+        <div id="cat-bar-chart"></div>
       </div>
 
       <!-- Monthly Trend -->
       <div class="card cp">
-        <span class="sl" style="display:block;margin-bottom:12px">Monthly Trend</span>
+        <span class="sl" style="display:block;margin-bottom:12px">📈 Monthly Trend (6 months)</span>
         <div id="monthly-trend"></div>
       </div>
 
-      <!-- Daily Average + Stats -->
+      <!-- Daily Spend Bar -->
       <div class="card cp">
-        <span class="sl" style="display:block;margin-bottom:12px">Quick Stats</span>
-        <div id="quick-stats"></div>
+        <span class="sl" style="display:block;margin-bottom:14px">📅 Daily Spend</span>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+
+      <!-- Top Transactions -->
+      <div class="card cp">
+        <span class="sl" style="display:block;margin-bottom:12px">🏆 Top 5 Expenses</span>
+        <div id="top5"></div>
+      </div>
+
+      <!-- Month vs Month -->
+      <div class="card cp">
+        <span class="sl" style="display:block;margin-bottom:12px">📉 This vs Last Month</span>
+        <div id="mom-compare"></div>
       </div>
 
       <!-- By Account -->
       <div class="card cp">
-        <span class="sl" style="display:block;margin-bottom:12px">By Account</span>
+        <span class="sl" style="display:block;margin-bottom:12px">🏦 By Account</span>
         <div id="acc-breakdown"></div>
       </div>
+
+      <!-- Smart Insights -->
+      <div class="card cp" style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(236,72,153,.06));border-color:rgba(99,102,241,.2)">
+        <span class="sl" style="display:block;margin-bottom:10px">💡 Smart Insights</span>
+        <div id="smart-insights"></div>
+      </div>
+
     </div>
 
     <!-- LEN DEN -->
@@ -1434,7 +1491,7 @@ async function sendAI(){
     const now=new Date();
     const ms=monthStart();
     const mExp=S.expenses.filter(e=>e.date>=ms);
-    const realExp=mExp.filter(e=>!e.is_lenden);
+    const realExp=mExp.filter(e=>e.type==='expense'&&!e.is_lenden);
     const lendenExp=mExp.filter(e=>e.is_lenden);
     const expTxt=realExp.slice(0,50).map(e=>`${e.date}: ₹${e.amount} ${e.type} (${e.categories?.name||'Other'}) ${e.description||''} [${e.accounts?.name||''}]`).join('\n');
     const lendenTxt=lendenExp.slice(0,20).map(e=>`${e.date}: ₹${e.amount} (${e.description||'Len Den'}) [${e.accounts?.name||''}]`).join('\n');
@@ -1451,35 +1508,32 @@ async function sendAI(){
     const catBreakdown={};
     realExp.forEach(e=>{const c=e.categories?.name||'Other';catBreakdown[c]=(catBreakdown[c]||0)+parseFloat(e.amount)});
     const catSummary=Object.entries(catBreakdown).sort((a,b)=>b[1]-a[1]).map(([c,a])=>`${c}: ₹${fN(a)}`).join(', ');
-    const totalSpent=sm(realExp);
+    const totalSpent=sm(realExp.filter(e=>e.type==='expense'));
     const totalInc=sm(mExp.filter(e=>e.type==='income'));
 
-    const sys=`You are SwapExp AI, a smart personal finance assistant for an Indian user. Answer questions about their expenses accurately.
+    const sys=`You are SwapExp AI - a personal finance assistant. You have full access to the user's expense data. Answer ANY question freely - not just predefined ones. Be conversational, helpful and specific.
 
-=== ${now.toLocaleString('default',{month:'long',year:'numeric'})} SUMMARY ===
-Total Spent: ₹${fN(totalSpent)}
-Total Income: ₹${fN(totalInc)}
-Net Savings: ₹${fN(totalInc-totalSpent)}${S.budget?`
-Budget: ₹${fN(S.budget.total_budget)} | Used: ${Math.round((totalSpent/parseFloat(S.budget.total_budget))*100)}%`:''}
+CURRENT MONTH: ${now.toLocaleString('default',{month:'long',year:'numeric'})}
+TOTAL EXPENSE: Rs.${fN(totalSpent)}
+TOTAL INCOME: Rs.${fN(totalInc)}
+NET SAVINGS: Rs.${fN(totalInc-totalSpent)}${S.budget?`
+BUDGET: Rs.${fN(S.budget.total_budget)} | USED: ${Math.round((totalSpent/parseFloat(S.budget.total_budget))*100)}%`:''}
 
-=== CATEGORY WISE SPENDING ===
-${catSummary||'No data'}
+CATEGORY BREAKDOWN: ${catSummary||'No data'}
 
-=== ALL TRANSACTIONS THIS MONTH ===
+TRANSACTIONS THIS MONTH:
 ${expTxt||'No transactions'}
 
-=== LEN DEN (NOT IN EXPENSE) ===
-${lendenTxt||'None'}
+LEN DEN ENTRIES: ${lendenTxt||'None'}
+LEN DEN BALANCES: ${ldSum||'None'}
 
-=== LEN DEN BALANCES ===
-${ldSum||'None'}
-
-Instructions:
+RULES:
 - Reply in SAME language as user (Hindi/Hinglish/English)
-- Be specific with numbers and categories
-- Max 150 words
-- If asked "kahan zyada kharch hua" — show top categories with amounts
-- If asked "kitna bacha" — calculate from income minus expense`;
+- Answer ANY expense related question freely
+- Give specific numbers from the data above
+- Be concise - max 150 words
+- You can do calculations, comparisons, suggestions
+- If data not available say so clearly`;
     // Format messages for Gemini (user/model roles only)
     const geminiMsgs=S.aiHist.map(h=>({
       role:h.role==='user'?'user':'model',
